@@ -97,6 +97,7 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		if (empl == null) {
 			return ReturnCode.EMPLOYEE_NOT_FOUND;
 		}
+		// V.R. It is not necessary. BEGIN
 		List<Employee>listEmployeesAge;
 		try {
 			readLockAge.lock();
@@ -104,12 +105,14 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		} finally {
 			readLockAge.unlock();
 		}
+		// V.R. It is not necessary. END
 		try {
 			writeLockAge.lock();
 			listEmployeesAge.remove(empl);
 		} finally {
 			writeLockAge.unlock();
 		}
+		// V.R. It is not necessary. BEGIN
 		List<Employee>listEmployeesDepartment;
 		try {
 			readLockDepartment.lock();
@@ -117,12 +120,14 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		} finally {
 			readLockDepartment.unlock();
 		}
+		// V.R. It is not necessary. END
 		try {
 			writeLockDepartment.lock();
 			listEmployeesDepartment.remove(empl);
 		} finally {
 			writeLockDepartment.unlock();
 		}
+		// V.R. It is not necessary. BEGIN
 		List<Employee>listEmployeesSalary;
 		try {
 			readLockSalary.lock();
@@ -130,6 +135,7 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		} finally {
 			readLockSalary.unlock();
 		}
+		// V.R. It is not necessary. END
 		try {
 			writeLockSalary.lock();
 			listEmployeesSalary.remove(empl);
@@ -146,6 +152,8 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		try {
 			readLockGeneral.lock();
 			employees = mapEmployees.values();
+			// V.R. It is much better to to write return here:
+			// return copyEmployees(employees);
 		} finally {
 			readLockGeneral.unlock();
 		}
@@ -170,6 +178,8 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		try {
 			readLockGeneral.lock();
 			empl = mapEmployees.get(id);
+			// V.R. It is much better to to write return here:
+			// return empl == null ? null : copyOneEmployee(empl);
 		} finally {
 			readLockGeneral.unlock();
 		}
@@ -183,6 +193,9 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		try {
 			readLockAge.lock();
 			lists = employeesAge.subMap(ageFrom, true, ageTo, true).values();
+			// V.R. It is better
+			// List<Employee> employeesList = getCombinedList(lists);
+			// return copyEmployees(employeesList);
 		} finally {
 			readLockAge.unlock();
 		}
@@ -202,6 +215,9 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		try {
 			readLockSalary.lock();
 			lists = employeesSalary.subMap(salaryFrom, true, salaryTo, true).values();
+			// V.R. It is better
+			// List<Employee> employeesList = getCombinedList(lists);
+			// return copyEmployees(employeesList);
 		} finally {
 			readLockSalary.unlock();
 		}
@@ -216,6 +232,7 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		try {
 			readLockDepartment.lock();
 			employees = employeesDepartment.getOrDefault(department, Collections.emptyList());
+			// V.R. It the place for return
 		} finally {
 			readLockDepartment.unlock();
 		}
@@ -256,6 +273,7 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		} finally {
 			readLockGeneral.unlock();
 		}
+		// V.R. Both of IFs can be inside the try
 		if (empl == null) {
 			return ReturnCode.EMPLOYEE_NOT_FOUND;
 		}
@@ -277,6 +295,7 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		} finally {
 			writeLockSalary.unlock();
 		}
+		// V.R. return can be inside the try's brackets.
 		return ReturnCode.OK;
 	}
 
@@ -319,6 +338,9 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 		if (inputFile.exists()) {
 			try (ObjectInputStream input = new ObjectInputStream(new FileInputStream(inputFile))) {
 				EmployeesMethodsMapsImpl employeesFromFile = (EmployeesMethodsMapsImpl) input.readObject();
+				/* V.R.
+				 * Is it possible  to read/write maps and to change them concurrently?
+				 */
 				this.employeesAge = employeesFromFile.employeesAge;
 				this.employeesDepartment =  employeesFromFile.employeesDepartment;
 				this.employeesSalary = employeesFromFile.employeesSalary;
@@ -333,6 +355,9 @@ public class EmployeesMethodsMapsImpl implements EmployeesMethods {
 	@Override
 	public void save() {
 		try(ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(fileName))) {
+			/* V.R.
+			 * Is it possible  to read/write maps and to save them concurrently?
+			 */
 			output.writeObject(this);
 		} catch (Exception e) {
 			throw new RuntimeException(e.toString());
